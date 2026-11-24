@@ -266,6 +266,131 @@
     return html;
   }
 
+
+  /* ---------- Plain-language life story ---------- */
+  const PLAIN_PLANET = { Sun: 'confidence, father and recognition', Moon: 'peace of mind, mother and feelings', Mars: 'energy, courage and property', Mercury: 'intelligence, speech, studies and business', Jupiter: 'luck, wisdom, teachers and money', Venus: 'love, comfort, marriage and enjoyment', Saturn: 'hard work, patience and delays', Rahu: 'big ambitions, sudden changes and new paths', Ketu: 'letting go, confusion and inner growth' };
+  const PLAIN_HOUSE = [null, 'your health and personality', 'money and family', 'courage, siblings and your own efforts', 'home, mother and studies', 'studies, children, love and creativity', 'work, competition and health', 'relationships, marriage and partnerships', 'sudden changes and hidden problems', 'luck, father and higher learning', 'career and reputation', 'income, friends and gains', 'expenses, far-away places and rest'];
+  function saturnNote(jdMid, moonSign) {
+    const T = (jdMid - 2451545.0) / 36525;
+    // cheap: reuse engine by computing a chart at that instant
+    const d = A.jdToDate(jdMid);
+    const t = A.computeChart({ year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(), hour: 12, minute: 0, tzOffsetHours: 0, lat: 20, lon: 78 });
+    const h = A.houseFrom(t.planets.Saturn.sign, moonSign);
+    if ([12, 1, 2].includes(h)) return ' Sade Sati (Saturn passing over your Moon) was also running, so pressure, responsibilities or family worries were higher than usual.';
+    if ([4, 8].includes(h)) return ' Saturn was in a testing position, adding obstacles and slowing things down.';
+    if ([3, 6, 11].includes(h)) return ' Saturn was in a helpful position, quietly supporting steady gains.';
+    return '';
+  }
+  function plainSection(chart, user) {
+    const P = chart.planets, nowJD = chart.transits.jd, birth = chart.jd;
+    const age = (jd) => ((jd - birth) / 365.25);
+    const ageNow = age(nowJD);
+    const good = (n) => strengthScore(P[n]) >= 7;
+    const sorted = A.PLANETS.map(n => ({ n, s: strengthScore(P[n]) })).sort((a, b) => b.s - a.s);
+    const strong = sorted.filter(x => x.s >= 8).slice(0, 3).map(x => x.n), weak = sorted.filter(x => x.s <= 5).map(x => x.n);
+    const first = user.name.split(' ')[0];
+    let html = para(`${esc(first)}, this part of your report is written the way a well-wisher would speak to you across a table, without technical words. Astrology works with time periods: each planet gets its turn to run your life for some years, and inside each big period there are smaller ones. By looking at which planet was in charge and where it sits in your chart, we can say what each phase of your life was about, what is happening now, and what is coming.`);
+
+    // who you are
+    html += `<h3>Who you are, in simple words</h3>`;
+    html += para(`On the outside you come across as ${plainLagna(chart.ascendant.sign)}. Inside, your mind works like ${plainMoon(P.Moon.sign)}. The strongest planets in your chart are ${strong.length ? strong.join(', ') : sorted[0].n}, which means ${strong.length ? strong.map(n => PLAIN_PLANET[n]).join('; ') : PLAIN_PLANET[sorted[0].n]} come naturally to you. ${weak.length ? `The planets that need your attention are ${weak.join(' and ')}, so ${weak.map(n => PLAIN_PLANET[n]).join(' and ')} are the areas where life asks you to put in conscious effort.` : 'No planet in your chart is seriously weak, which is a real blessing.'}`);
+
+    html += `<h3>Your good points</h3><ul>`;
+    for (const n of (strong.length ? strong : [sorted[0].n]).slice(0, 4)) html += `<li><strong>${n} is strong</strong> (in ${P[n].signName}, ${ord(P[n].house)} house): ${plainStrong(n, P[n].house)}</li>`;
+    if (chart.yogas.length) html += `<li><strong>Special combinations:</strong> ${chart.yogas.map(y => plainYoga(y)).join(' ')}</li>`;
+    if (!chart.mangalDosha && !chart.mangalDoshaFromMoon) html += `<li><strong>No Mangal Dosha:</strong> there is no Mars-related obstacle to marriage in your chart.</li>`;
+    html += `</ul><h3>Things to be careful about</h3><ul>`;
+    for (const n of weak.slice(0, 3)) html += `<li><strong>${n} needs support</strong> (in ${P[n].signName}, ${ord(P[n].house)} house): ${plainWeak(n, P[n].house)}</li>`;
+    if (chart.mangalDosha || chart.mangalDoshaFromMoon) html += `<li><strong>Mangal Dosha is present:</strong> marriage needs a patient, compatible partner; matching charts before marriage is wise.</li>`;
+    if (!weak.length) html += `<li>Nothing major. Your main risk is over-confidence, so keep listening to honest advice.</li>`;
+    html += `</ul>`;
+
+    // life so far
+    html += `<h3>Your life so far, period by period</h3>`;
+    html += para(`You were born in the period of ${chart.dasha.nakshatra.lord}. Here is what each phase of your life was about. Think back and you will find these match the broad pattern of what happened, even if the details differ.`);
+    html += `<div class="timeline">`;
+    let childEnd = null;
+    for (const m of chart.dasha.mahadashas) {
+      if (m.start > nowJD) break;
+      for (const a of m.antardashas) {
+        const s = Math.max(a.start, m.start); if (s > nowJD) break;
+        const e = a.end; const a0 = age(s), a1 = age(Math.min(e, nowJD));
+        if (a1 <= 5) { childEnd = e; continue; }
+        if (childEnd !== null) {
+          html += `<div class="tl-item"><div class="tl-when">${fmtDate(birth)} – ${fmtDate(childEnd)}<span>age 0–${Math.ceil(age(childEnd))}</span></div><div class="tl-text">Early childhood, in the period of ${chart.dasha.nakshatra.lord}. These years reflect mainly on your parents and home: ${PLAIN_HOUSE[P[chart.dasha.nakshatra.lord].house]} were in focus for the family${[12, 1, 2].includes(A.houseFrom(chart.planets.Saturn.sign, P.Moon.sign)) ? '' : ''}.${saturnNote((birth + childEnd) / 2, P.Moon.sign)}</div></div>`;
+          childEnd = null;
+        }
+        if (a1 - a0 < 0.25 && e < nowJD) continue;
+        const lord = a.lord, lp = P[lord], isNow = e >= nowJD;
+        let txt = `${m.lord}–${lord} time, about ${PLAIN_PLANET[lord]}. The focus ${isNow ? 'is' : 'was'} on ${PLAIN_HOUSE[lp.house]}. `;
+        if (lord === 'Ketu') txt += isNow ? 'Ketu periods bring endings, doubt and a search for meaning even when Ketu is well placed; something that was not meant to last is leaving, and this clears the way for what comes next.' : 'Something ended or lost its meaning in this phase, and you grew wiser for it.';
+        else if (lord === 'Rahu') txt += isNow ? 'Rahu periods bring big ambitions, sudden changes and some confusion; keep your feet on the ground and avoid shortcuts.' : 'This phase brought sudden changes, big ambitions and probably some confusion about direction.';
+        else txt += good(lord) ? (isNow ? 'This phase should mostly go well and bring growth.' : 'This phase mostly went well and brought growth.') : strengthScore(lp) <= 4 ? (isNow ? 'This phase tests you; things do not come easily and patience is needed.' : 'This was a phase that tested you; things did not come easily and you had to learn patience.') : (isNow ? 'This is a mixed phase with both progress and effort.' : 'This was a mixed phase with both progress and effort.');
+        if (lord === m.lord) txt += ' Because the big period and the small period had the same planet, its effects were felt strongly.';
+        if (!['Rahu', 'Ketu'].includes(lord) && [6, 8, 12].includes(((lp.house - P[m.lord].house + 12) % 12) + 1)) txt += isNow ? ' A change of direction or a setback is likely in this phase; it will make sense later.' : ' There was likely a change of direction, a loss or a setback in this phase that later made sense.';
+        let sn = saturnNote((s + Math.min(e, nowJD)) / 2, P.Moon.sign); if (isNow) sn = sn.replace('was also running', 'is also running').replace('were higher', 'are higher').replace('was in', 'is in');
+        txt += sn;
+        if (isNow) txt = '<strong>This is the phase you are in now.</strong> ' + txt;
+        html += `<div class="tl-item"><div class="tl-when">${fmtDate(s)} – ${fmtDate(e)}<span>age ${Math.floor(a0)}–${Math.ceil(age(e))}</span></div><div class="tl-text">${txt}</div></div>`;
+      }
+    }
+    html += `</div>`;
+
+    // now
+    const cm = chart.currentDasha.maha, ca = chart.currentDasha.antar, ml = P[cm.lord], al = P[ca.lord];
+    html += `<h3>Where you are right now</h3>`;
+    html += para(`You are ${Math.floor(ageNow)} years old and living in the big period of ${cm.lord} (${fmtDate(cm.start)} to ${fmtDate(cm.end)}) and the smaller period of ${ca.lord} (until ${fmtDate(ca.end)}). In plain words, ${cm.lord} is about ${PLAIN_PLANET[cm.lord]} and in your chart it is sitting in the area of ${PLAIN_HOUSE[ml.house]}. ${ca.lord} is about ${PLAIN_PLANET[ca.lord]} and sits in the area of ${PLAIN_HOUSE[al.house]}. So right now life is mostly about ${PLAIN_HOUSE[ml.house]} and ${PLAIN_HOUSE[al.house]}.`);
+    const ss = { rising: 'Saturn has just begun its seven-and-a-half-year passage over your Moon (Sade Sati). The first part brings extra expenses and the feeling that something is ending. Do not panic; reduce commitments and clear debts.', peak: 'You are in the middle, most intense part of Sade Sati. Life feels heavier, responsibilities are more, and results come slowly. This is not bad luck; it is a training period. People who keep working honestly through it come out much stronger.', setting: 'You are in the last part of Sade Sati. The hardest part is behind you. Finish what you started and avoid new loans; relief is close.', dhaiya: 'Saturn is in a testing position from your Moon for about two and a half years. Expect delays, some health or home worries and a feeling of being stuck. It passes.', none: [3, 6, 11].includes(chart.transits.fromMoon.Saturn) ? 'Saturn is in a helpful position right now, which quietly supports steady progress and wins over competitors.' : 'Saturn is in a neutral position, neither blocking nor pushing you.' }[chart.sadeSati];
+    const jh = chart.transits.fromMoon.Jupiter;
+    html += para(`${ss} Jupiter, the planet of luck, is ${[2, 5, 7, 9, 11].includes(jh) ? `in a lucky position for you this year, helping with ${PLAIN_HOUSE[jh]}` : `not in one of its best positions this year, so luck in ${PLAIN_HOUSE[jh]} needs effort rather than arriving on its own`}. ${ca.lord === 'Ketu' ? `Ketu's small period is a clearing-out time: expect some confusion about direction and the ending of something that no longer fits. It is temporary and ends on ${fmtDate(ca.end)}, and what follows is a fresh start.` : ca.lord === 'Rahu' ? `Rahu's small period pushes ambition and brings sudden changes; stay grounded and avoid shortcuts. It ends on ${fmtDate(ca.end)}.` : good(ca.lord) ? `Because ${ca.lord} is strong in your chart, this small period should feel better than the one before it.` : `Because ${ca.lord} is not strong in your chart, this small period can feel confusing or slow; it is temporary and ends on ${fmtDate(ca.end)}.`}`);
+
+    // future
+    html += `<h3>What is coming</h3><div class="timeline">`;
+    let count = 0;
+    for (const m of chart.dasha.mahadashas) {
+      if (m.end <= nowJD) continue;
+      for (const a of m.antardashas) {
+        if (a.end <= nowJD || a === chart.currentDasha.antar) continue;
+        if (count++ >= 7) break;
+        const s = Math.max(a.start, m.start, nowJD), lp = P[a.lord];
+        const isNewMaha = m.start > nowJD && a === m.antardashas[0];
+        let txt = `${m.lord}–${a.lord} time. ${isNewMaha ? `<strong>A new big period of ${m.lord} begins.</strong> ${plainMahaStart(m.lord, P[m.lord].house)} ` : ''}Focus shifts to ${PLAIN_HOUSE[lp.house]}. ${good(a.lord) ? 'Expect progress and good news in these matters.' : 'Go slowly and carefully in these matters; avoid big risks.'}`;
+        txt += saturnNote((s + a.end) / 2, P.Moon.sign).replace('was', 'will be').replace('were', 'will be');
+        html += `<div class="tl-item"><div class="tl-when">${fmtDate(s)} – ${fmtDate(a.end)}<span>age ${Math.floor(age(s))}–${Math.ceil(age(a.end))}</span></div><div class="tl-text">${txt}</div></div>`;
+      }
+      if (count >= 7) break;
+    }
+    html += `</div>`;
+    const nextGood = sorted.filter(x => x.s >= 8 && !['Rahu', 'Ketu'].includes(x.n)).slice(0, 3).map(x => x.n);
+    const upcoming = chart.dasha.mahadashas.filter(m => m.start > nowJD).slice(0, 3);
+    html += para(`<strong>The bigger picture:</strong> ${upcoming.map(m => `your ${m.lord} period (${fmtDate(m.start).slice(-4)} to ${fmtDate(m.end).slice(-4)}, age ${Math.floor(age(m.start))} to ${Math.floor(age(m.end))}) will be ${good(m.lord) ? 'a strong, rewarding time' : 'a time of learning and effort'} centred on ${PLAIN_HOUSE[P[m.lord].house]}`).join('; ')}. ${nextGood.length ? `The periods of ${nextGood.join(' and ')} are the ones in which your biggest achievements are likely.` : ''}`);
+
+    // simple help
+    const picks = [...new Set([...weak, cm.lord])].slice(0, 3);
+    html += `<h3>Simple things that help you</h3><ul>`;
+    for (const n of picks) html += `<li><strong>For ${n}:</strong> ${I.REMEDY[n].practice}. ${I.REMEDY[n].charity}.</li>`;
+    html += `<li><strong>Every day:</strong> ${plainDaily(chart.ascendant.sign)}</li></ul>`;
+    html += para(`Remember: a chart shows the weather, not the destination. Good periods reward effort many times over, and difficult periods are shorter and lighter for those who stay disciplined, honest and kind. You have more good in this chart than you may realise.`);
+    return html;
+  }
+  function plainLagna(s) { return ['someone active, quick and brave who likes to lead', 'someone calm, steady and reliable who values comfort and loyalty', 'someone talkative, clever and curious who adapts easily', 'someone caring, sensitive and family-minded', 'someone confident, warm and dignified who likes respect', 'someone careful, practical and helpful who notices details', 'someone charming, fair and sociable who dislikes conflict', 'someone intense, private and determined', 'someone honest, optimistic and freedom-loving', 'someone serious, hardworking and responsible', 'someone original, friendly and independent-minded', 'someone gentle, imaginative and kind-hearted'][s]; }
+  function plainMoon(s) { return ['a quick fire: you feel strongly and act fast, and you forgive fast', 'a steady river: you feel deeply, slowly, and you do not easily let go', 'a busy mind: you think about feelings more than you feel them, and you need conversation', 'a tide: moods come and go, memory is long, and family means everything', 'a king\'s heart: proud, generous, warm, and hurt by disrespect', 'a careful planner: you worry, you help, and you expect a lot of yourself', 'a balance: you want peace and fairness and feel incomplete without a close partner', 'deep water: you feel everything intensely, trust slowly and never forget', 'an open sky: hopeful, honest and in need of freedom', 'a mountain: controlled, dutiful and slow to show feelings', 'a wide view: you care about people in general and need friendship more than romance', 'an ocean: you absorb everyone\'s feelings and need quiet to recover'][s]; }
+  function plainStrong(n, h) {
+    const base = { Sun: 'you have natural confidence and people see you as a leader; your father or an authority figure plays a strong role.', Moon: 'your mind is stable and people like you; your mother is a blessing in your life.', Mars: 'you have energy, courage and the ability to fight for what you want; property comes to you.', Mercury: 'you are intelligent, good with words, numbers and business, and you learn fast.', Jupiter: 'luck protects you, teachers help you, and money and wisdom grow with age.', Venus: 'love, comfort, good taste and a happy married life are well supported.', Saturn: 'you can work harder and longer than others, and what you build lasts.', Rahu: 'you have big ambitions and can succeed in new, modern or foreign fields.', Ketu: 'you have natural intuition and can let go of what does not matter.' }[n];
+    return base + ` This strength shows up most in ${PLAIN_HOUSE[h]}.`;
+  }
+  function plainWeak(n, h) {
+    const base = { Sun: 'confidence may come and go, and your relationship with father or bosses may need work; respect yourself first.', Moon: 'peace of mind needs protecting; avoid over-thinking and keep a regular sleep routine.', Mars: 'energy and courage need to be built; avoid anger and hasty decisions.', Mercury: 'be extra careful with paperwork, speech and business decisions; think before you speak.', Jupiter: 'luck has to be earned and good advisors must be chosen carefully; respect teachers and give on Thursdays.', Venus: 'love and relationships need patience and honesty; avoid excess spending and indulgence.', Saturn: 'delays and hard work are part of your story; patience is the only way through.', Rahu: 'beware of shortcuts, illusions and people who promise too much.', Ketu: 'confusion about direction can appear; meditation and a mentor help.' }[n];
+    return base + ` This shows up mainly in ${PLAIN_HOUSE[h]}.`;
+  }
+  function plainYoga(y) {
+    return { 'Gajakesari': 'Jupiter and Moon are well placed together, which gives respect, intelligence and protection in life.', 'Budhaditya': 'Sun and Mercury together give a sharp mind and skill with words.', 'Chandra-Mangala': 'Moon and Mars together give the ability to earn through courage and enterprise.', 'Kemadruma': 'The Moon stands alone, which can bring loneliness at times; building close friendships is important.', 'Ruchaka': 'Mars is exceptionally strong, giving courage and leadership.', 'Bhadra': 'Mercury is exceptionally strong, giving intelligence, communication skill and business sense.', 'Hamsa': 'Jupiter is exceptionally strong, giving wisdom, luck and respect.', 'Malavya': 'Venus is exceptionally strong, giving charm, comfort and a happy love life.', 'Shasha': 'Saturn is exceptionally strong, giving authority and lasting success through discipline.', 'Raja Yoga': 'A royal combination promises rise in status and authority.', 'Dhana Yoga': 'A wealth combination promises money through more than one source.', 'Viparita Raja Yoga': 'You gain from situations where others lose; crises turn into opportunities.', 'Neecha Bhanga Raja Yoga': 'A weakness in your chart turns into a strength after early struggle.', 'Amala': 'Your reputation stays clean and respected.', 'Saraswati': 'A learning combination gives excellent intelligence and skill in knowledge fields.' }[y] || '';
+  }
+  function plainMahaStart(n, h) {
+    return { Sun: 'For six years life asks you to stand up, be seen and take responsibility. Career, recognition and your father\'s matters come forward.', Moon: 'For ten years life becomes more emotional and more public: home, mother, travel and popularity come forward.', Mars: 'For seven years energy rises: property, competition, courage and some conflicts come forward.', Mercury: 'For seventeen years intelligence, business, communication and learning lead the way.', Jupiter: 'For sixteen years wisdom, children, money and good fortune expand; this is usually a golden stretch.', Venus: 'For twenty years love, marriage, comfort and enjoyment lead the way.', Saturn: 'For nineteen years hard work and patience are the theme; slow but permanent results.', Rahu: 'For eighteen years ambition and big changes lead; great success is possible but keep your feet on the ground.', Ketu: 'For seven years life simplifies; what is not needed falls away and inner growth begins.' }[n] + ` In your chart this planet sits in the area of ${PLAIN_HOUSE[h]}, so that is where the action will be.`;
+  }
+  function plainDaily(s) { return ['Take three breaths before reacting; exercise daily.', 'Walk daily and keep sweets in check.', 'Sleep on time and keep your phone away for an hour each day.', 'Eat on time in a calm place; spend time near water.', 'Get early morning sunlight and keep your back straight.', 'Eat simple fresh food and stop worrying about problems that have not come.', 'Drink enough water and keep your room tidy.', 'Find a healthy outlet for your intensity: sport, art or prayer.', 'Walk in the open air and avoid excess in food and promises.', 'Oil your joints, rest deliberately and smile more.', 'Move your body daily and spend time in nature.', 'Keep your feet warm, protect your sleep and set clear limits with people.'][s]; }
+
   /* ---------- Main ---------- */
   function build(chart, user) {
     const P = chart.planets, asc = chart.ascendant, moon = P.Moon;
@@ -302,6 +427,9 @@
       lagna.body.map(para).join('') +
       para(`Your Lagna rises at ${asc.degFmt} of ${asc.signName}, in the nakshatra of ${asc.nakshatra.name}. ${asc.degFmt.startsWith('0°') || asc.degFmt.startsWith('1°') || asc.degFmt.startsWith('28°') || asc.degFmt.startsWith('29°') ? 'Because the Lagna is very close to a sign boundary, the qualities of the neighbouring sign also colour your personality, and an exact birth time matters a great deal for fine judgements.' : 'The Lagna degree is comfortably within the sign, so the qualities described above apply fully.'} Your Lagna lord ${asc.lord} is placed in your ${ord(P[asc.lord].house)} house in ${P[asc.lord].signName}, ${P[asc.lord].dignity.toLowerCase()}. ${relationText(1, P[asc.lord].house)} This single placement tells us where your life energy naturally flows: toward ${I.HOUSE[P[asc.lord].house].theme}.`) +
       (chart.houses[0].planets.length ? para(`Planets in your Lagna shape your personality directly. ${chart.houses[0].planets.map(p => I.PLANET_HOUSE[p][1]).join(' ')}`) : para('No planet occupies your Lagna, which means your personality is expressed cleanly through the sign itself and through the Lagna lord, without the colouring that occupant planets would add. People meet the sign first and the deeper planets later.'))));
+
+    // Plain-language life story
+    sections.push(sec('story', 'Your Life Story in Simple Words', 'Past · Present · Future, for everyone', plainSection(chart, user)));
 
     // Moon & mind
     sections.push(sec('moon', `The Mind: Moon in ${moon.signName}, ${moon.nakshatra.name} Nakshatra`, 'Chandra and Janma Nakshatra',
