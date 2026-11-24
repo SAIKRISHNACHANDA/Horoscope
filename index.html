@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JyotishVeda — Complete Vedic Horoscope Report for ₹499</title>
+  <meta name="description" content="Get a 40+ page personalised Vedic horoscope: Lagna, Nakshatra, planet-by-planet and house-by-house analysis, Vimshottari Dasha timeline, yogas, Sade Sati, remedies and the year ahead. Written in the style of a senior Jyotishi. Only ₹499.">
+  <meta property="og:title" content="JyotishVeda — Your Complete Vedic Horoscope for ₹499">
+  <meta property="og:description" content="Deep, classical Vedic analysis of your birth chart. Instant, personalised, printable.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23c9a227'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='%231a1405' font-family='serif'%3Eॐ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="container">
+    <a href="#top" class="logo"><span class="om">ॐ</span><span data-brand>JyotishVeda</span></a>
+    <nav class="nav-links">
+      <a href="#inside">What's inside</a>
+      <a href="#how">How it works</a>
+      <a href="#sample">Sample</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#generate" class="btn btn-gold">Get my horoscope · <span data-price>₹499</span></a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <canvas id="stars"></canvas>
+  <div class="container">
+    <div>
+      <span class="kicker">Classical Parashari Jyotisha · Lahiri Ayanamsa</span>
+      <h1>Your complete Vedic horoscope, <em>read the way a master astrologer reads it.</em></h1>
+      <p class="lead">Not a two-line sun-sign forecast. A deep, personalised Janma Kundli analysis of every planet, every house, your Nakshatra, your Dasha periods, your yogas and doshas, Sade Sati, remedies and the year ahead, explained in plain language with the reasoning behind every conclusion.</p>
+      <div class="hero-cta">
+        <a href="#generate" class="btn btn-gold btn-lg">Generate My Horoscope</a>
+        <span class="price-pill"><strong data-price>₹499</strong><s data-oprice>₹1999</s><span class="muted">one-time</span></span>
+      </div>
+      <div class="trust"><span>Instant, in under a minute</span><span>40+ pages of analysis</span><span>Printable PDF</span><span>Birth details never shared</span></div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card form-card" id="generate">
+      <h3>Enter your birth details</h3>
+      <span class="muted small">Exact time matters. Check your birth certificate or hospital record if you can.</span>
+      <form id="kundli-form" novalidate>
+        <div class="field"><label for="name">Full name</label><input id="name" type="text" placeholder="e.g. Ananya Sharma" autocomplete="name" required></div>
+        <div class="row row-2">
+          <div class="field"><label for="gender">Gender</label>
+            <select id="gender"><option value="">Prefer not to say</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option></select></div>
+          <div class="field"><label for="year">Birth year</label><select id="year"></select></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label for="day">Day</label><select id="day"></select></div>
+          <div class="field"><label for="month">Month</label>
+            <select id="month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+          <div class="field"><label>Time (24h)</label><div class="row row-2" style="gap:6px"><select id="hour" aria-label="Hour"></select><select id="minute" aria-label="Minute"></select></div></div>
+        </div>
+        <div class="field"><label for="place">Place of birth</label><input id="place" type="text" placeholder="Start typing your city…" autocomplete="off" required>
+          <ul class="city-list" id="city-list"></ul>
+          <input type="hidden" id="lat"><input type="hidden" id="lon"><input type="hidden" id="tz">
+        </div>
+        <label class="check"><input type="checkbox" id="manual-loc"> My city isn't listed — enter coordinates manually</label>
+        <div class="row row-3" id="manual-fields">
+          <div class="field"><label for="mlat">Latitude</label><input id="mlat" type="number" step="0.0001" placeholder="17.385"></div>
+          <div class="field"><label for="mlon">Longitude</label><input id="mlon" type="number" step="0.0001" placeholder="78.4867"></div>
+          <div class="field"><label for="mtz">UTC offset</label><input id="mtz" type="number" step="0.25" placeholder="5.5" value="5.5"></div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-block btn-lg" id="generate-btn">Generate My Horoscope <span>→</span></button>
+        <p class="form-note">Free preview of your Lagna and chart. Unlock the complete report for <strong data-price>₹499</strong>.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHAT'S INSIDE ============ -->
+<section class="block" id="inside">
+  <div class="container center">
+    <span class="kicker">What's inside your report</span>
+    <h2>Every aspect of your chart, analysed in depth</h2>
+    <p class="lead">Each section explains not just <em>what</em> is indicated but <em>why</em>, quoting the classical principle behind the reading so you can follow the astrologer's logic.</p>
+    <div class="grid-4" style="text-align:left">
+      <div class="feature"><div class="ico">१</div><h4>Lagna &amp; Personality</h4><p>Your rising sign, its lord's placement, and what both reveal about body, temperament and life direction.</p></div>
+      <div class="feature"><div class="ico">२</div><h4>Moon Sign &amp; Nakshatra</h4><p>The mind, emotions and your birth star with its deity, symbol, pada and ruling planet.</p></div>
+      <div class="feature"><div class="ico">३</div><h4>All Nine Grahas</h4><p>Planet-by-planet: sign dignity, house, nakshatra, retrograde and combustion, with full interpretation.</p></div>
+      <div class="feature"><div class="ico">४</div><h4>Twelve Bhavas</h4><p>House-by-house reading of each lord's placement and every occupant, using whole-sign houses.</p></div>
+      <div class="feature"><div class="ico">५</div><h4>Career &amp; Wealth</h4><p>10th, 2nd and 11th lords, Jupiter, Dhana yogas and the fields where you naturally prosper.</p></div>
+      <div class="feature"><div class="ico">६</div><h4>Marriage &amp; Mangal Dosha</h4><p>7th lord, Venus, your likely partner's nature, Kuja dosha check with cancellations, and timing.</p></div>
+      <div class="feature"><div class="ico">७</div><h4>Health, Education, Family</h4><p>Constitution and vulnerable areas, intelligence and children, parents and siblings.</p></div>
+      <div class="feature"><div class="ico">८</div><h4>Yogas &amp; Doshas</h4><p>Gajakesari, Budhaditya, Pancha Mahapurusha, Raja, Dhana, Viparita Raja, Neecha Bhanga, Kemadruma and more.</p></div>
+      <div class="feature"><div class="ico">९</div><h4>Vimshottari Dasha</h4><p>Your full 120-year Mahadasha timeline with ages, current Antardasha analysis and what comes next.</p></div>
+      <div class="feature"><div class="ico">१०</div><h4>Sade Sati &amp; Transits</h4><p>Saturn, Jupiter and the Rahu–Ketu axis from your Moon, and a synthesis of the year ahead.</p></div>
+      <div class="feature"><div class="ico">११</div><h4>Remedies (Upaya)</h4><p>Mantras, charities, fasting days, practices and gemstone guidance for the planets that need support.</p></div>
+      <div class="feature"><div class="ico">१२</div><h4>Auspicious Factors</h4><p>Lucky colours, numbers, days, direction, metal and Ishta Devata hint, plus your North Indian chart.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="block" id="how" style="background:var(--bg2)">
+  <div class="container center">
+    <span class="kicker">How it works</span>
+    <h2>Three steps to your Kundli</h2>
+    <div class="grid-3 steps" style="text-align:left;margin-top:2rem">
+      <div class="feature step"><h4>Enter birth details</h4><p>Name, date, exact time and place of birth. We compute your planetary positions using sidereal astronomy and the Lahiri ayanamsa, the standard used by Indian government panchangs.</p></div>
+      <div class="feature step"><h4>Preview for free</h4><p>See your Lagna, Rashi, Nakshatra, your full birth chart and the opening analysis of your rising sign before you pay a rupee.</p></div>
+      <div class="feature step"><h4>Unlock for <span data-price>₹499</span></h4><p>Pay securely by UPI, card or netbanking. The complete report opens instantly and you can save it as a PDF to read and re-read for years.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SAMPLE ============ -->
+<section class="block sample" id="sample">
+  <div class="container sample-wrap">
+    <div>
+      <span class="kicker">A taste of the reading</span>
+      <h2>Written like a consultation, not a computer printout</h2>
+      <p class="lead">Every paragraph is composed from the actual positions in your chart: the dignity of each planet, which houses it rules, where its lord sits, and which dasha you are living through today.</p>
+      <ul>
+        <li>Classical reasoning explained in modern language</li>
+        <li>Honest about tensions and weaknesses, with practical counsel</li>
+        <li>Timing: which periods bring career moves, marriage, wealth</li>
+        <li>Remedies you can actually practise, not only expensive gemstones</li>
+      </ul>
+      <button class="btn btn-ghost" id="sample-btn">View a full sample report</button>
+    </div>
+    <blockquote class="excerpt">
+      Your 10th lord Saturn sits in your 6th house in Gemini, in a friend's sign. The lord moves to the ninth from its own, a trinal relationship of great fortune; your career is protected by grace and grows through service, competition and disciplined learning. With Saturn as career lord, the fields that reward you most naturally are industry, law, administration and long-term institutional work, and the Saturn Mahadasha beginning in your forty-first year is when these promises mature.
+      <span class="who">Excerpt from the Career section of a generated report</span>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section class="block" id="pricing">
+  <div class="container">
+    <div class="center"><span class="kicker">Simple pricing</span><h2>One report. One price. No subscription.</h2></div>
+    <div class="card pricing-card" style="margin-top:2rem">
+      <span class="ribbon">Launch offer</span>
+      <span class="kicker">Complete Vedic Horoscope</span>
+      <div class="amount"><s data-oprice>₹1999</s><span data-price>₹499</span></div>
+      <p class="muted">One-time payment · instant access · printable PDF</p>
+      <ul>
+        <li>40+ pages of personalised analysis across 13 sections</li>
+        <li>Birth chart, planetary table and strength analysis</li>
+        <li>Full Vimshottari Dasha timeline to age 120</li>
+        <li>Mangal Dosha check with cancellation factors</li>
+        <li>Sade Sati and current transits from your Moon</li>
+        <li>Remedies, mantras, charities and gemstone guidance</li>
+        <li>Re-open and print any time; nothing stored on our servers</li>
+      </ul>
+      <a href="#generate" class="btn btn-gold btn-lg btn-block">Start with a free preview</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="block" id="voices" style="background:var(--bg2)">
+  <div class="container center">
+    <span class="kicker">What readers say</span>
+    <h2>Depth that surprised them</h2>
+    <div class="grid-3" style="text-align:left;margin-top:2rem">
+      <div class="testi"><div class="stars">★★★★★</div><p>"I have paid ₹3000 for consultations that said less than this. The Dasha section explained exactly why 2019–2021 was so hard for me."</p><div class="who">Priyanka R., Pune</div></div>
+      <div class="testi"><div class="stars">★★★★★</div><p>"The house-by-house part reads like my family astrologer talking. It even caught the Mangal Dosha cancellation he had told us about."</p><div class="who">Karthik V., Chennai</div></div>
+      <div class="testi"><div class="stars">★★★★★</div><p>"Finally a report that explains the reasoning. I understood my own chart for the first time instead of just being told 'good' or 'bad'."</p><div class="who">Meenakshi S., Hyderabad</div></div>
+    </div>
+    <p class="muted small" style="margin-top:1.5rem">Illustrative reader feedback from early access.</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="block" id="faq">
+  <div class="container">
+    <div class="center"><span class="kicker">Questions</span><h2>Frequently asked</h2></div>
+    <div class="faq" style="margin-top:1.5rem">
+      <div class="faq-item"><button>How accurate are the planetary positions?</button><div class="ans">We compute positions from standard astronomical algorithms (the same family used in professional ephemeris software), convert them to the sidereal zodiac with the Lahiri (Chitrapaksha) ayanamsa, and use whole-sign houses as in the Parashari tradition. Sun and Moon are accurate to a few arc-minutes and planets to a fraction of a degree, which is more than sufficient for sign, house, nakshatra and dasha calculation.</div></div>
+      <div class="faq-item"><button>I don't know my exact birth time. Can I still get a report?</button><div class="ans">Yes, but the Lagna (rising sign) changes roughly every two hours, so an approximate time may give a different ascendant. Use the best estimate you have; the Moon sign, Nakshatra, planetary signs and Dasha periods are far less sensitive to the exact minute and will still be correct.</div></div>
+      <div class="faq-item"><button>Is this Vedic (Indian) or Western astrology?</button><div class="ans">Vedic. We use the sidereal zodiac, Nakshatras, Vimshottari Dasha, Parashari yogas and classical remedies. Your "Sun sign" here may differ from the Western one you know, because the sidereal zodiac is about 24 degrees behind the tropical zodiac.</div></div>
+      <div class="faq-item"><button>What do I get for ₹499?</button><div class="ans">The complete personalised report: all 13 sections, roughly 40 printed pages, including the chart, planetary table, Dasha timeline, yogas, Sade Sati, remedies and the year-ahead synthesis. You can print it or save it as a PDF from your browser immediately.</div></div>
+      <div class="faq-item"><button>Is my data stored anywhere?</button><div class="ans">Your chart is calculated in your own browser. Birth details are not sent to or stored on any server. Only the payment itself is processed by the payment gateway.</div></div>
+      <div class="faq-item"><button>Can I buy a report for a family member?</button><div class="ans">Yes. Each report is for one set of birth details. Enter their name and details and purchase separately.</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div><div class="logo"><span class="om">ॐ</span><span data-brand>JyotishVeda</span></div><p class="legal">Astrological readings are offered for guidance and self-reflection. They are not a substitute for medical, legal, financial or psychological advice. © <span data-year></span> <span data-brand>JyotishVeda</span>.</p></div>
+    <div><a href="#generate" class="btn btn-gold">Get my horoscope · <span data-price>₹499</span></a></div>
+  </div>
+</footer>
+
+<!-- ============ REPORT VIEW ============ -->
+<div id="report-view" class="locked" aria-live="polite">
+  <div class="report-bar">
+    <div class="container">
+      <div class="logo"><span class="om">ॐ</span><span data-brand>JyotishVeda</span></div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="new-report">← New chart</button>
+        <button class="btn btn-ghost" id="print-btn" style="display:none">Print / Save PDF</button>
+        <button class="btn btn-gold" data-pay>Unlock full report · <span data-price>₹499</span></button>
+        <button class="btn btn-ghost" id="close-report" aria-label="Close">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="container report-layout">
+    <nav id="report-toc" aria-label="Report sections"></nav>
+    <div class="report-paper">
+      <div id="report-body"></div>
+      <div id="report-paywall">
+        <div class="paywall-card">
+          <span class="kicker">You've seen the opening</span>
+          <h3>Unlock the complete analysis</h3>
+          <div class="amount"><s data-oprice>₹1999</s><span data-price>₹499</span></div>
+          <ul>
+            <li>Moon sign &amp; Nakshatra reading</li><li>All 9 planets, in depth</li>
+            <li>All 12 houses</li><li>Career, wealth, marriage, health</li>
+            <li>Yogas &amp; Mangal Dosha</li><li>Full Dasha timeline &amp; current period</li>
+            <li>Sade Sati &amp; year ahead</li><li>Remedies &amp; lucky factors</li>
+          </ul>
+          <button class="btn btn-gold btn-lg" data-pay>Pay <span data-price>₹499</span> and unlock now</button>
+          <p class="muted small" style="margin-top:1rem">Secure payment · Instant access · Printable</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAYMENT MODAL ============ -->
+<div class="modal" id="pay-modal" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+  <div class="card modal-card">
+    <button class="x" data-close-modal aria-label="Close">×</button>
+    <span class="kicker">Complete your purchase</span>
+    <h3 id="pay-title">Complete Vedic Horoscope · <span data-price>₹499</span></h3>
+    <div id="upi-box" class="pay-box"></div>
+    <div class="pay-box" id="upi-ref-box">
+      <div class="field"><label for="upi-ref">UPI transaction reference</label><input id="upi-ref" type="text" placeholder="12-digit UTR / reference number"></div>
+      <button class="btn btn-gold btn-block" id="upi-confirm">I have paid — unlock my report</button>
+    </div>
+    <div class="pay-box" id="wa-box" style="display:none"><p class="muted small" style="margin:0 0 8px">Need help with payment?</p><a class="btn btn-ghost btn-block" id="wa-link" target="_blank" rel="noopener">Message us on WhatsApp</a></div>
+    <div class="pay-box" id="demo-box" style="display:none; border-color: var(--teal)"><p class="muted small" style="margin:0 0 8px">Test mode is enabled in config.js. Disable before launch.</p><button class="btn btn-ghost btn-block" id="demo-unlock">Continue in test mode (no payment)</button></div>
+    <p class="err-text" id="pay-error"></p>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="js/config.js"></script>
+<script src="js/cities.js"></script>
+<script src="js/astro.js"></script>
+<script src="js/interpretations.js"></script>
+<script src="js/report.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
